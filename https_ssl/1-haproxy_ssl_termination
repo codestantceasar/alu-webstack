@@ -1,0 +1,23 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    maxconn 200
+    tune.ssl.default-dh-param 2048
+
+defaults
+    log     global
+    option  httplog
+    timeout connect 5000ms
+    timeout client  50000ms
+    timeout server  50000ms
+
+frontend https_front
+    bind *:443 ssl crt /etc/letsencrypt/live/www.codestantceasar.tech/cert_with_key.pem
+    mode http
+    option httplog
+    default_backend web_servers
+
+backend web_servers
+    mode http
+    server web1 44.208.23.228:80 check
+    server web2 18.208.133.144:80 check
