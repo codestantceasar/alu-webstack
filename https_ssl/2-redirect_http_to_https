@@ -1,0 +1,35 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    maxconn 200
+    tune.ssl.default-dh-param 2048
+
+defaults
+    log     global
+    option  httplog
+    timeout connect 5000ms
+    timeout client  50000ms
+    timeout server  50000ms
+
+# Frontend for HTTP (port 80)
+frontend http_front
+    bind *:80
+    mode http
+    option httplog
+    # Redirect HTTP traffic to HTTPS with 301 status code
+    http-request redirect location https://%[hdr(host)]%[url] code 301
+
+# Frontend for HTTPS (port 443)
+frontend https_front
+    bind *:443 ssl crt /etc/letsencrypt/live/www.codestantceasar.tech/cert_with_key.pem
+    mode http
+    option httplog
+    default_backend web_servers
+
+# Backend configuration
+backend web_servers
+    mode http
+    balance roundrobin
+    option http-server-close
+    server web1 44.208.23.228:80 check
+    server web2 18.208.133.144:80 check
